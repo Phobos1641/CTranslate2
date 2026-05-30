@@ -527,7 +527,7 @@ if (WITH_CUDA)
   endif()
 
   if(NOT CUDA_ARCHITECTURES)
-    set(CUDA_ARCHITECTURES "75-real 80-real 86-real 89-real 90-real 100-real 110-real 120")
+    set(CUDA_ARCHITECTURES "75-real;80-real;86-real;89-real;90-real;100-real;110-real;120")
     message(STATUS "Set default CUDA_ARCHITECTURES: ${CUDA_ARCHITECTURES}")
   endif()
 

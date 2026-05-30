@@ -27,6 +27,8 @@ else
     sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo
     sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo
     dnf install --setopt=obsoletes=0 -y \
+        cuda-compiler-13-2 \
+        cuda-libraries-13-2 cuda-libraries-devel-13-2 \
         cuda-nvcc-13-2 \
         cuda-cudart-devel-13-2 \
         libcurand-devel-13-2 \
