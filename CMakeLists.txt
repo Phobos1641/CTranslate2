@@ -495,7 +495,6 @@ if (WITH_CUDA)
   if(WITH_HIP)
     message(FATAL_ERROR "WITH_CUDA=ON incompatible with WITH_HIP=ON")
   endif()
-  enable_language(CUDA)
   list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
   if (WITH_TENSOR_PARALLEL)
     find_package(MPI REQUIRED)
@@ -529,9 +528,12 @@ if (WITH_CUDA)
 
   if(NOT CUDA_ARCHITECTURES)
     set(CUDA_ARCHITECTURES "75-real 80-real 86-real 89-real 90-real 100-real 110-real 120")
+    message(STATUS "Set default CUDA_ARCHITECTURES: ${CUDA_ARCHITECTURES}")
   endif()
 
-  set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+  set(CUDA_COMPILER ${CMAKE_CXX_COMPILER})
+
+  enable_language(CUDA)
 
   # flags for flash attention
   if (WITH_FLASH_ATTN)
@@ -539,7 +541,7 @@ if (WITH_CUDA)
     list(APPEND CUDA_NVCC_FLAGS "--expt-extended-lambda")
   endif()
 
-  message(STATUS "NVCC host compiler: ${CUDA_HOST_COMPILER}")
+  message(STATUS "NVCC host compiler: ${CUDA_COMPILER}")
   message(STATUS "NVCC compilation flags: ${CUDA_NVCC_FLAGS}")
 
   # We should ensure that the Thrust include directories appear before
@@ -670,7 +672,7 @@ if (WITH_CUDA)
     ${SOURCES}
     ${CUDA_SOURCES}
   )
-  target_compile_options(${PROJECT_NAME} PRIVATE ${CUDA_NVCC_FLAGS})
+  target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:${CUDA_NVCC_FLAGS}>)
 
 
 elseif(WITH_HIP)
