@@ -47,39 +47,6 @@ jobs:
           name: python-wheels-${{ runner.os }}-${{ matrix.arch }}
           path: python/wheelhouse
 
-  build-python-wheels-rocm:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-24.04]
-
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          submodules: recursive
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
-        with:
-          package-dir: python
-          output-dir: python/wheelhouse
-        env:
-          CIBW_ENVIRONMENT_LINUX: ROCM_PATH=/opt/rocm LD_LIBRARY_PATH=/opt/rocm/lib/llvm/lib:$LD_LIBRARY_PATH
-          CIBW_ENVIRONMENT_WINDOWS: CTRANSLATE2_ROOT='${{ github.workspace }}\install'
-          CIBW_BEFORE_ALL_LINUX: python/tools/prepare_build_environment_linux_rocm.sh
-          CIBW_BEFORE_ALL_WINDOWS: bash python/tools/prepare_build_environment_windows_rocm.sh
-          CIBW_BEFORE_BUILD: pip install -r python/install_requirements.txt
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
-          CIBW_ARCHS: auto64
-          CIBW_SKIP: "*-musllinux_*"
-          CIBW_REPAIR_WHEEL_COMMAND_LINUX: 'auditwheel repair -w {dest_dir} --exclude "/opt/rocm/lib/lib*" {wheel}'
-
-      - name: Upload Python wheels
-        uses: actions/upload-artifact@v7
-        with:
-          name: rocm-python-wheels-${{ runner.os }}
-          path: python/wheelhouse
-
 
   # We could test the Python wheels using cibuildwheel but we prefer to run the tests outside
   # the build environment to ensure wheels correctly embed all dependencies.
@@ -157,7 +124,7 @@ jobs:
 
   build-and-release:
     runs-on: ubuntu-latest
-    needs: [check-python-style, build-python-wheels, build-python-wheels-rocm]
+    needs: [check-python-style, build-python-wheels]
 
     permissions:
       contents: write
