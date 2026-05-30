@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+
 if (NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/cxxopts/include")
   message(FATAL_ERROR "The client dependency repository (cxxopts) is missing! "
     "You probably didn't clone the project with --recursive. You can include it "

@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+
 enable_testing()
 
 option(BUILD_GMOCK "" OFF)

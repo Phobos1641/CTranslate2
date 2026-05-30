@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.10)
 
 # Set policy for setting the MSVC runtime library for static MSVC builds
 if(POLICY CMP0091)
