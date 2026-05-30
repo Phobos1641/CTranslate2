@@ -25,14 +25,73 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Intel oneAPI
+      - name: Purge existing CUDA / NVIDIA packages
+        shell: bash
         run: |
-          wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
-          sudo apt-key add *.PUB
-          sudo sh -c 'echo "deb https://apt.repos.intel.com/oneapi all main" > /etc/apt/sources.list.d/oneAPI.list'
+          sudo apt-get remove --purge -y \
+            'cuda*' \
+            'libcuda*' \
+            'libnvidia*' \
+            'nvidia-cuda*' \
+            'libcublas*' \
+            'libcufft*' \
+            'libcurand*' \
+            'libcusolver*' \
+            'libcusparse*' \
+            'libnvjpeg*' \
+            'libnpp*' || true
+          sudo apt-get autoremove -y
+          sudo apt-get autoclean -y
+          sudo rm -rf \
+            /usr/local/cuda* \
+            /usr/lib/x86_64-linux-gnu/libcuda* \
+            /usr/lib/x86_64-linux-gnu/libcublas* \
+            /etc/apt/sources.list.d/cuda* \
+            /etc/apt/sources.list.d/nvidia*
           sudo apt-get update
 
-      - name: Configure with MKL
+      - name: Add NVIDIA CUDA repository
+        shell: bash
+        run: |
+          CUDA_REPO_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64"
+          wget -q "${CUDA_REPO_URL}/cuda-keyring_1.1-1_all.deb"
+          sudo dpkg -i cuda-keyring_1.1-1_all.deb
+          sudo apt-get update
+
+      - name: Install CUDA 13.2
+        shell: bash
+        run: |
+          sudo apt-get install -y --no-install-recommends \
+            cuda-13-2 \
+            cuda-libraries-dev-13-2 \
+            libcublas-13-2 libcublas13-dev-cuda-13 \
+            cudnn9-cuda-13 libcudnn9-dev-cuda-13 \
+            libnccl2 libnccl-dev
+
+      - name: Add CUDA to PATH and LD_LIBRARY_PATH
+        shell: bash
+        run: |
+          CUDA_PATH=/usr/local/cuda-13.2
+          echo "CUDA_HOME=$CUDA_PATH"  >> "$GITHUB_ENV"
+          echo "CUDA_PATH=$CUDA_PATH"  >> "$GITHUB_ENV"
+          echo "$CUDA_PATH/bin"        >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=$CUDA_PATH/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+
+      - name: Verify CUDA installation
+        shell: bash
+        run: |
+          nvcc --version
+          echo "CUDA_HOME=$CUDA_HOME"
+          ldconfig -p | grep -E "cudnn|nccl|cudart" | head
+          dpkg -l | grep -E 'cuda|cublas|cudnn'
+
+      - name: Setup Intel oneAPI
+        run: |
+          wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+
+      - name: Configure MKL
         if: matrix.backend == 'mkl'
         env:
           CT2_USE_MKL: 1
@@ -81,23 +140,82 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Intel oneAPI
+      - name: Purge existing CUDA / NVIDIA packages
+        shell: bash
         run: |
-          wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
-          sudo apt-key add *.PUB
-          sudo sh -c 'echo "deb https://apt.repos.intel.com/oneapi all main" > /etc/apt/sources.list.d/oneAPI.list'
-          sudo apt update
+          sudo apt-get remove --purge -y \
+            'cuda*' \
+            'libcuda*' \
+            'libnvidia*' \
+            'nvidia-cuda*' \
+            'libcublas*' \
+            'libcufft*' \
+            'libcurand*' \
+            'libcusolver*' \
+            'libcusparse*' \
+            'libnvjpeg*' \
+            'libnpp*' || true
+          sudo apt-get autoremove -y
+          sudo apt-get autoclean -y
+          sudo rm -rf \
+            /usr/local/cuda* \
+            /usr/lib/x86_64-linux-gnu/libcuda* \
+            /usr/lib/x86_64-linux-gnu/libcublas* \
+            /etc/apt/sources.list.d/cuda* \
+            /etc/apt/sources.list.d/nvidia*
+          sudo apt-get update
+
+      - name: Add NVIDIA CUDA repository
+        shell: bash
+        run: |
+          CUDA_REPO_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64"
+          wget -q "${CUDA_REPO_URL}/cuda-keyring_1.1-1_all.deb"
+          sudo dpkg -i cuda-keyring_1.1-1_all.deb
+          sudo apt-get update
+
+      - name: Install CUDA 13.2
+        shell: bash
+        run: |
+          sudo apt-get install -y --no-install-recommends \
+            cuda-13-2 \
+            cuda-libraries-dev-13-2 \
+            libcublas-13-2 libcublas13-dev-cuda-13 \
+            cudnn9-cuda-13 libcudnn9-dev-cuda-13 \
+            libnccl2 libnccl-dev
+
+      - name: Add CUDA to PATH and LD_LIBRARY_PATH
+        shell: bash
+        run: |
+          CUDA_PATH=/usr/local/cuda-13.2
+          echo "CUDA_HOME=$CUDA_PATH"  >> "$GITHUB_ENV"
+          echo "CUDA_PATH=$CUDA_PATH"  >> "$GITHUB_ENV"
+          echo "$CUDA_PATH/bin"        >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=$CUDA_PATH/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+
+      - name: Verify CUDA installation
+        shell: bash
+        run: |
+          nvcc --version
+          echo "CUDA_HOME=$CUDA_HOME"
+          ldconfig -p | grep -E "cudnn|nccl|cudart" | head
+          dpkg -l | grep -E 'cuda|cublas|cudnn'
+
+      - name: Setup Intel oneAPI
+        run: |
+          wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
 
       - name: Install MKL
         env:
           CT2_USE_MKL: 1
           MKL_VERSION: 2023.0.0
         run: |
-          sudo apt install -y intel-oneapi-mkl-devel-$MKL_VERSION
+          sudo apt-get install -y intel-oneapi-mkl-devel-$MKL_VERSION
 
       - name: Install Clang
         run: |
-          sudo apt install -y clang  
+          sudo apt-get install -y clang
 
       - name: Configure with MKL and Clang
         env:
