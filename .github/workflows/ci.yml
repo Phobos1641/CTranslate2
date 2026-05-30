@@ -251,8 +251,6 @@ jobs:
         include:
           - os: ubuntu-24.04-arm
             backend: openblas
-          - os: macos-15
-            backend: ruy
     steps:
       - uses: actions/checkout@v6
         with:
@@ -308,10 +306,6 @@ jobs:
         include:
         - os: ubuntu-24.04-arm
           arch: aarch64
-        - os: macos-15
-          arch: arm64
-        - os: macos-15-intel
-          arch: x86_64
 
     steps:
       - uses: actions/checkout@v6
@@ -413,10 +407,6 @@ jobs:
           - os: windows-2022
             artifact_pattern: python-wheels-Windows-auto64
             wheel_pattern: "*cp3*win*amd64.whl"
-
-          - os: macos-15
-            artifact_pattern: python-wheels-macOS-arm64
-            wheel_pattern: "*cp3*macosx*arm64.whl"
 
     steps:
       - name: Set up Python 3.14
