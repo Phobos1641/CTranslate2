@@ -27,15 +27,13 @@ else
     sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo
     sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo
     dnf install --setopt=obsoletes=0 -y \
-        cuda-toolkit-13 cuda-compiler-13-2 libnvptxcompiler-13-2 \
-        cuda-cudart-13-2 cuda-cudart-devel-13-2 \
-        cuda-libraries-13-2 cuda-libraries-devel-13-2 \
         cuda-nvcc-13-2 \
-        cuda-cudart-13-2 cuda-cudart-devel-13-2 \
-        libcurand-13-2 libcurand-devel-13-2 \
-        cudnn9-cuda-13 libcudnn9-devel-cuda-13 \
-        libcublas13-cuda-13 libcublas13-devel-cuda-13 \
-        libnccl-2.30.4-1+cuda13.2 libnccl-devel-2.30.4-1+cuda13.2
+        cuda-cudart-devel-13-2 \
+        libcurand-devel-13-2 \
+        libcudnn9-devel-cuda-13 \
+        libcublas-devel-13-2 \
+        libnccl-2.30.4-1+cuda13.2 \
+        libnccl-devel-2.30.4-1+cuda13.2
 
     export CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-13.2
     ls -la ${CUDA_TOOLKIT_ROOT_DIR}
