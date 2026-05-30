@@ -1,34 +1,29 @@
-#! /bin/bash
+#!/bin/bash
 
 set -e
 set -x
 
-CUDA_ROOT="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.8"
-curl --netrc-optional -L -nv -o cuda.exe https://developer.download.nvidia.com/compute/cuda/12.8.1/local_installers/cuda_12.8.1_572.61_windows.exe
-./cuda.exe -s nvcc_12.8 cudart_12.8 cublas_dev_12.8 curand_dev_12.8
-
+CUDA_ROOT="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.2"
+curl --netrc-optional -L -nv -o cuda.exe https://developer.download.nvidia.com/compute/cuda/13.2.0/local_installers/cuda_13.2.0_windows.exe
+./cuda.exe -s nvcc_13.2 cudart_13.2 cublas_dev_13.2 curand_dev_13.2
 rm cuda.exe
 
-CUDNN_ROOT="C:/Program Files/NVIDIA/CUDNN/v9.10"
-curl --netrc-optional -L -nv -o cudnn.exe https://developer.download.nvidia.com/compute/cudnn/9.10.2/local_installers/cudnn_9.10.2_windows.exe
+CUDNN_ROOT="C:/Program Files/NVIDIA/CUDNN/v9.22"
+curl --netrc-optional -L -nv -o cudnn.exe https://developer.download.nvidia.com/compute/cudnn/9.22.0/local_installers/cudnn_9.22.0_windows_x86_64.exe
 ./cudnn.exe -s
+rm cudnn.exe
 sleep 10
-# Remove 11.8 folders
-rm -rf "$CUDNN_ROOT/bin/11.8"
-rm -rf "$CUDNN_ROOT/lib/11.8"
-rm -rf "$CUDNN_ROOT/include/11.8"
+ls -la "$CUDNN_ROOT" || true
+# Remove 11.* folders
+rm -rf "$CUDNN_ROOT/bin/11.*"
+rm -rf "$CUDNN_ROOT/lib/11.*"
+rm -rf "$CUDNN_ROOT/include/11.*"
 
 # Move contents of 12.9 to parent directories
 mv "$CUDNN_ROOT/bin/12.9/"* "$CUDNN_ROOT/bin/"
 mv "$CUDNN_ROOT/lib/12.9/"* "$CUDNN_ROOT/lib/"
 mv "$CUDNN_ROOT/include/12.9/"* "$CUDNN_ROOT/include/"
-
-# Remove empty 12.9 folders
-rmdir "$CUDNN_ROOT/bin/12.9"
-rmdir "$CUDNN_ROOT/lib/12.9"
-rmdir "$CUDNN_ROOT/include/12.9"
 cp -r "$CUDNN_ROOT"/* "$CUDA_ROOT"
-rm cudnn.exe
 
 # See https://github.com/oneapi-src/oneapi-ci for installer URLs
 if [ ! -d "C:/Program Files (x86)/Intel/oneAPI" ]; then
