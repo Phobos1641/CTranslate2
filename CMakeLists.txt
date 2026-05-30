@@ -531,8 +531,6 @@ if (WITH_CUDA)
     set(CUDA_ARCHITECTURES "75-real 80-real 86-real 89-real 90-real 100-real 110-real 120")
   endif()
 
-  cuda_select_nvcc_arch_flags(ARCH_FLAGS ${CUDA_ARCH_LIST})
-  list(APPEND CUDA_NVCC_FLAGS ${ARCH_FLAGS})
   set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
 
   # flags for flash attention
@@ -670,10 +668,11 @@ if (WITH_CUDA)
       PROPERTIES COMPILE_FLAGS "--use_fast_math")
   endif()
   set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
-  cuda_add_library(${PROJECT_NAME}
+  add_library(${PROJECT_NAME}
     ${SOURCES}
     ${CUDA_SOURCES}
   )
+  target_compile_options(${PROJECT_NAME} PRIVATE ${CUDA_NVCC_FLAGS})
 
 
 elseif(WITH_HIP)
