@@ -549,13 +549,11 @@ if (WITH_CUDA)
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/thrust/dependencies/cub
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/thrust
     )
-  cuda_include_directories(${THRUST_INCLUDE_DIRS})
   list(APPEND PRIVATE_INCLUDE_DIRECTORIES ${THRUST_INCLUDE_DIRS})
 
   set(CUTLASS_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/cutlass/include
   )
-  cuda_include_directories(${CUTLASS_INCLUDE_DIRS})
   list(APPEND PRIVATE_INCLUDE_DIRECTORIES ${CUTLASS_INCLUDE_DIRS})
 
   if(WITH_CUDNN)
