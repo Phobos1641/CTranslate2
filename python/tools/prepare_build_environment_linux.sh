@@ -77,7 +77,7 @@ else
     )
 
     (
-      OPENMPI_VERSION=4.1.6
+      OPENMPI_VERSION=4.1.8
       curl -L -O https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-${OPENMPI_VERSION}.tar.bz2
       tar xf *.tar.bz2 && rm *.tar.bz2
       cd openmpi-*
