@@ -12,18 +12,6 @@ CUDNN_ROOT="C:/Program Files/NVIDIA/CUDNN/v9.22"
 curl --netrc-optional -L -nv -o cudnn.exe https://developer.download.nvidia.com/compute/cudnn/9.22.0/local_installers/cudnn_9.22.0_windows_x86_64.exe
 ./cudnn.exe -s
 rm cudnn.exe
-sleep 10
-ls -la "$CUDNN_ROOT" || true
-# Remove 11.* folders
-rm -rf "$CUDNN_ROOT/bin/11.*"
-rm -rf "$CUDNN_ROOT/lib/11.*"
-rm -rf "$CUDNN_ROOT/include/11.*"
-
-# Move contents of 12.9 to parent directories
-mv "$CUDNN_ROOT/bin/12.9/"* "$CUDNN_ROOT/bin/"
-mv "$CUDNN_ROOT/lib/12.9/"* "$CUDNN_ROOT/lib/"
-mv "$CUDNN_ROOT/include/12.9/"* "$CUDNN_ROOT/include/"
-cp -r "$CUDNN_ROOT"/* "$CUDA_ROOT"
 
 # See https://github.com/oneapi-src/oneapi-ci for installer URLs
 if [ ! -d "C:/Program Files (x86)/Intel/oneAPI" ]; then
