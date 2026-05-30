@@ -608,6 +608,12 @@ jobs:
           pattern: python-wheels-${{ runner.os }}-*
           merge-multiple: true
           path: .
+      - name: Download CTranslate2 Python wheels
+        uses: actions/download-artifact@v4
+        with:
+          pattern: python-wheels-*
+          merge-multiple: true
+          path: wheels
       - name: Install CTranslate2 wheel
         run: |
           pip install *cp3*manylinux*x86_64.whl
@@ -651,3 +657,4 @@ jobs:
         with:
           files:
             release-zips/*.zip
+            wheels/*.whl
