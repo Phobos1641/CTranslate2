@@ -516,14 +516,14 @@ if (WITH_CUDA)
   add_definitions(-DCT2_WITH_CUDA)
   if(MSVC)
     if(BUILD_SHARED_LIBS)
-      list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=/MD$<$<CONFIG:Debug>:d>")
+      set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler=/MD$<$<CONFIG:Debug>:d>")
     else()
-      list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=/MT$<$<CONFIG:Debug>:d>")
+      set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler=/MT$<$<CONFIG:Debug>:d>")
     endif()
   endif()
-  list(APPEND CUDA_NVCC_FLAGS "-std=c++17")
+  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++17")
   if(OpenMP_CXX_FOUND)
-    list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=${OpenMP_CXX_FLAGS}")
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler=${OpenMP_CXX_FLAGS}")
   endif()
 
   if(NOT CUDA_ARCHITECTURES)
@@ -531,18 +531,20 @@ if (WITH_CUDA)
     message(STATUS "Set default CUDA_ARCHITECTURES: ${CUDA_ARCHITECTURES}")
   endif()
 
-  set(CUDA_COMPILER ${CMAKE_CXX_COMPILER})
+  #set(CUDA_COMPILER ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc)
 
   enable_language(CUDA)
 
   # flags for flash attention
   if (WITH_FLASH_ATTN)
-    list(APPEND CUDA_NVCC_FLAGS "--expt-relaxed-constexpr")
-    list(APPEND CUDA_NVCC_FLAGS "--expt-extended-lambda")
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --expt-relaxed-constexpr")
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --expt-extended-lambda")
   endif()
 
-  message(STATUS "NVCC host compiler: ${CUDA_COMPILER}")
-  message(STATUS "NVCC compilation flags: ${CUDA_NVCC_FLAGS}")
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${CUDA_NVCC_FLAGS}")
+
+  message(STATUS "CUDA compiler: ${CUDA_COMPILER}")
+  message(STATUS "CUDA compilation flags: ${CMAKE_CUDA_FLAGS}")
 
   # We should ensure that the Thrust include directories appear before
   # -I/usr/local/cuda/include for both GCC and NVCC, so that the headers
@@ -559,6 +561,8 @@ if (WITH_CUDA)
   list(APPEND PRIVATE_INCLUDE_DIRECTORIES ${CUTLASS_INCLUDE_DIRS})
 
   if(WITH_CUDNN)
+    find_path(CUDA_RUNTIME_INCLUDES NAMES cuda_runtime.h HINTS ${CUDA_TOOLKIT_ROOT_DIR}/include)
+
     # Find cuDNN includes.
     find_path(CUDNN_INCLUDE_DIR NAMES cudnn.h HINTS ${CUDA_TOOLKIT_ROOT_DIR}/include)
     if(CUDNN_INCLUDE_DIR)
@@ -583,7 +587,7 @@ if (WITH_CUDA)
 
     # libcudnn.so is a shim layer that dynamically loads the correct library at runtime,
     # so we explicitly link against it even with CUDA_DYNAMIC_LOADING.
-    list(APPEND PRIVATE_INCLUDE_DIRECTORIES ${CUDNN_INCLUDE_DIR})
+    list(APPEND PRIVATE_INCLUDE_DIRECTORIES ${CUDA_RUNTIME_INCLUDES} ${CUDNN_INCLUDE_DIR})
     list(APPEND LIBRARIES ${CUDNN_LIBRARIES})
     add_definitions(-DCT2_WITH_CUDNN)
     list(APPEND CUDA_SOURCES src/ops/conv1d_cudnn_gpu.cu)
@@ -672,7 +676,6 @@ if (WITH_CUDA)
     ${SOURCES}
     ${CUDA_SOURCES}
   )
-  target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:${CUDA_NVCC_FLAGS}>)
 
 
 elseif(WITH_HIP)

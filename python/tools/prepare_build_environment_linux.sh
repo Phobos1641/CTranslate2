@@ -20,23 +20,36 @@ if [ "$CIBW_ARCHS" == "aarch64" ]; then
 
 else
     dnf install -y dnf-plugins-core
-    # Install CUDA 13.2:
+    # Install CUDA:
     dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo
     # error mirrorlist.centos.org doesn't exists anymore.
     sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo
     sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo
     sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo
     dnf install --setopt=obsoletes=0 -y \
-        cuda-compiler-13-2 \
+        cuda-toolkit-13 cuda-compiler-13-2 libnvptxcompiler-13-2 \
+        cuda-cudart-13-2 cuda-cudart-devel-13-2 \
         cuda-libraries-13-2 cuda-libraries-devel-13-2 \
         cuda-nvcc-13-2 \
-        cuda-cudart-devel-13-2 \
-        libcurand-devel-13-2 \
-        libcudnn9-devel-cuda-13 \
-        libcublas-devel-13-2 \
-        libnccl-2.30.4-1+cuda13.2 \
-        libnccl-devel-2.30.4-1+cuda13.2
-    ln -s cuda-13.2 /usr/local/cuda
+        cuda-cudart-13-2 cuda-cudart-devel-13-2 \
+        libcurand-13-2 libcurand-devel-13-2 \
+        cudnn9-cuda-13 libcudnn9-devel-cuda-13 \
+        libcublas13-cuda-13 libcublas13-devel-cuda-13 \
+        libnccl-2.30.4-1+cuda13.2 libnccl-devel-2.30.4-1+cuda13.2
+
+    export CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-13.2
+    ls -la ${CUDA_TOOLKIT_ROOT_DIR}
+    ls -la ${CUDA_TOOLKIT_ROOT_DIR}/bin
+    export CUDA_HOME=$CUDA_TOOLKIT_ROOT_DIR
+    export CUDA_PATH=$CUDA_TOOLKIT_ROOT_DIR
+    export PATH="${CUDA_TOOLKIT_ROOT_DIR}:${PATH}"
+    export CUDACXX=${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc
+    export LD_LIBRARY_PATH=${CUDA_TOOLKIT_ROOT_DIR}/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+
+    if ! find /usr/include "${CUDA_TOOLKIT_ROOT_DIR}" -name 'cuda_runtime.h' -print -quit 2>/dev/null | grep -q .; then
+      echo "Did not find cuda_runtime.h !"
+      exit 1
+    fi
 
     ONEAPI_VERSION=2025.3.0
     dnf config-manager --add-repo https://yum.repos.intel.com/oneapi
